@@ -26,6 +26,37 @@ def check_api_keys():
         print("\n please set them in a .env file or environment vriables.")
         return False
     return True
+
+def get_weather(city: str):
+    """fetch weather data for a given city """
+    params={
+        "key" : WEATHER_API_KEY,
+        "q": city,
+        "aqi":"no",
+    }
+    try:
+        response= request.get(WEATHER_URL, params=params, timeout=8)
+        if response.status_code==200:
+            data = response.json()
+            return {
+                "city": data["location"]["name"],
+                "country" : data["location"]["country"],
+                "country_code": data["location"]["country"][:2].lower(),
+                "temp_c": data["current"]["temp_c"],
+                "condition": data["current"]["condition"]["text"],
+                "humidity": data["current"]["humidity"],
+                "wind_kph": data["current"]["wind_kph"],
+            }   
+        elif response.status_code == 400:
+            return{"error": f"City '{city}' not found. Please check spelling."}
+        else:
+            return {"error": f"Weather API error: HTTP {response.status_code}"}
+    except request.exceptions.RequestException as e:
+        return {"error": f"Network error: {str(e)}"}
+    except Exception as e:
+        return {"error": f"Unexpected error: {str(e)}"}
+        
+        
         
 
 
